@@ -109,12 +109,12 @@ class GlobalData extends DataController implements PullInterface
      * @param DataModel $model
      * @return Action
      */
-    /*public function push(DataModel $model)
+    public function push(DataModel $model)
     {
         $action = new Action();
-        
+
         $action->setResult(new GlobalData($this->application));
-        
+
         return $action;
-    }*/
+    }
 }

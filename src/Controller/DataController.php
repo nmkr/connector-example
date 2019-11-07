@@ -13,15 +13,9 @@ abstract class DataController extends AbstractController
 {
     protected $db;
     
-    public function __construct(Application $application)
+    public function __construct(Application $application, \PDO $pdo)
     {
         parent::__construct($application);
-        
-        $username = '';
-        $password = '';
-        $dbName = '';
-        
-        $pdo = new \PDO(sprintf('mysql:host=localhost;dbname=%s', $dbName), $username, $password);
     
         $this->db = $pdo;
     }

@@ -14,10 +14,8 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
     /* @var \PDO */
     protected $db;
     
-    public function __construct()
+    public function __construct(\PDO $pdo)
     {
-        $pdo = new \PDO(sprintf('sqlite:%s', Path::combine(CONNECTOR_DIR, 'db', 'connector.s3db')));
-        
         $this->db = $pdo;
     }
     
@@ -113,4 +111,13 @@ class PrimaryKeyMapper implements IPrimaryKeyMapper
     {
         return $this->db->query('DELETE FROM mapping');
     }
+
+    /**
+     * @return \PDO
+     */
+    public function getDb(): \PDO
+    {
+        return $this->db;
+    }
+
 }
