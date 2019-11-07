@@ -19,13 +19,11 @@ try {
         chmod($logDir, 0777);
     }
 
-    $username = '';
-    $password = '';
-    $dbName = '';
+    $username = 'root';
+    $password = 'jtlgmbh';
+    $dbName = 'example';
 
     $pdo = new \PDO(sprintf('mysql:host=localhost;dbname=%s', $dbName), $username, $password);
-
-    //$pdo = new \PDO(sprintf('sqlite:%s', Path::combine(CONNECTOR_DIR, 'db', 'connector.s3db')));
 
     // Connector instance
     $connector = new Connector(new PrimaryKeyMapper($pdo), new TokenValidator());

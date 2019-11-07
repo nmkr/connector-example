@@ -16,7 +16,8 @@ abstract class DataController extends AbstractController
     public function __construct(Application $application, \PDO $pdo)
     {
         parent::__construct($application);
-    
+        
+        $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, FALSE);
         $this->db = $pdo;
     }
     

@@ -37,23 +37,18 @@ class GlobalData extends DataController implements PullInterface
         
         $id1 = new Identity(1);
         $id2 = new Identity(2);
-        
-        // Languages
-        $globalData->addLanguage(
-            (new Language())->setId($id1)
-                ->setLanguageISO('ger')
-                ->setIsDefault(true)
-                ->setNameGerman('Deutsch')
-                ->setNameEnglish('German')
-        );
-        
-        $globalData->addLanguage(
-            (new Language())->setId($id2)
-                ->setLanguageISO('eng')
-                ->setIsDefault(false)
-                ->setNameGerman('Englisch')
-                ->setNameEnglish('English')
-        );
+    
+        $languages = $this->query('Select * From language');
+    
+        foreach ($languages as $language) {
+            $globalData->addLanguage(
+                (new Language())->setId(new Identity($language['id_language']))
+                    ->setLanguageISO($language['iso_code'])
+                    ->setIsDefault($language['is_default'])
+                    ->setNameGerman($language['name'])
+                    ->setNameEnglish($language['name'])
+            );
+        }
         
         // Currencies
         $globalData->addCurrency(
@@ -113,7 +108,7 @@ class GlobalData extends DataController implements PullInterface
     {
         $action = new Action();
 
-        $action->setResult(new GlobalData($this->application));
+        $action->setResult(new GlobalData($this->application, $this->db));
 
         return $action;
     }
