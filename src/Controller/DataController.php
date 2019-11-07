@@ -6,138 +6,35 @@
 
 namespace Jtl\Connector\Example\Controller;
 
-use jtl\Connector\Core\Controller\Controller;
-use jtl\Connector\Core\Logger\Logger;
-use jtl\Connector\Core\Model\QueryFilter;
-use jtl\Connector\Core\Rpc\Error;
-use jtl\Connector\Core\Utilities\ClassName;
-use Jtl\Connector\Example\Utility\Mmc;
-use jtl\Connector\Formatter\ExceptionFormatter;
-use jtl\Connector\Core\Model\DataModel;
-use jtl\Connector\Model\Statistic;
-use jtl\Connector\Result\Action;
-use jtl\Connector\Serializer\JMS\SerializerBuilder;
+use Jtl\Connector\Core\Application\Application;
+use Jtl\Connector\Core\Controller\AbstractController;
 
-abstract class DataController extends Controller
+abstract class DataController extends AbstractController
 {
-    /**
-     * Statistic
-     *
-     * @param \jtl\Connector\Core\Model\QueryFilter $queryFilter
-     * @return \jtl\Connector\Result\Action
-     */
-    public function statistic(QueryFilter $queryFilter)
+    protected $db;
+    
+    public function __construct(Application $application)
     {
-        $action = new Action();
-        $action->setHandled(true);
-
-        try {
-            $class = ClassName::getFromNS(get_called_class());
-
-            $statModel = new Statistic();
-            $mapper = Mmc::getMapper($class);
-
-            $statModel->setAvailable($mapper->fetchCount());
-            $statModel->setControllerName(lcfirst($class));
-
-            $action->setResult($statModel->getPublic());
-        } catch (\Exception $exc) {
-            $action->setError($this->handleException($exc));
-        }
-
-        return $action;
+        parent::__construct($application);
+        
+        $username = '';
+        $password = '';
+        $dbName = '';
+        
+        $pdo = new \PDO(sprintf('mysql:host=localhost;dbname=%s', $dbName), $username, $password);
+    
+        $this->db = $pdo;
     }
-
-    /**
-     * Insert or update
-     *
-     * @param \jtl\Connector\Core\Model\DataModel $model
-     * @return \jtl\Connector\Result\Action
-     */
-    public function push(DataModel $model)
+    
+    public function query(string $query, array $params = []): array
     {
-        $action = new Action();
-        $action->setHandled(true);
-
-        try {
-            $class = ClassName::getFromNS(get_called_class());
-
-            $mapper = Mmc::getMapper($class);
-            $mapper->save($model);
-            $action->setResult($model);
-        } catch (\Exception $exc) {
-            $action->setError($this->handleException($exc));
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+    
+        if ($result = $stmt->fetchAll(\PDO::FETCH_ASSOC)) {
+            return $result;
         }
-
-        return $action;
-    }
-
-    /**
-     * Select
-     *
-     * @param \jtl\Connector\Core\Model\QueryFilter $queryFilter
-     * @return \jtl\Connector\Result\Action
-     */
-    public function pull(QueryFilter $queryFilter)
-    {
-        $action = new Action();
-        $action->setHandled(true);
-
-        try {
-            $result = [];
-            $limit = $queryFilter->isLimit() ? $queryFilter->getLimit() : 100;
-
-            $class = ClassName::getFromNS(get_called_class());
-
-            $mapper = Mmc::getMapper($class);
-            $models = $mapper->findAll($limit);
-
-            $serializer = SerializerBuilder::create();
-            foreach ($models as $model) {
-                $result[] = $serializer->deserialize($model, sprintf('jtl\Connector\Model\%s', $class), 'json');
-            }
-
-            $action->setResult($result);
-        } catch (\Exception $exc) {
-            $action->setError($this->handleException($exc));
-        }
-
-        return $action;
-    }
-
-    /**
-     * Delete
-     *
-     * @param \jtl\Connector\Core\Model\DataModel $model
-     * @return \jtl\Connector\Result\Action
-     */
-    public function delete(DataModel $model)
-    {
-        $action = new Action();
-        $action->setHandled(true);
-
-        try {
-            $class = ClassName::getFromNS(get_called_class());
-
-            $mapper = Mmc::getMapper($class);
-            $res = $mapper->delete($model);
-
-            $action->setResult($res);
-        } catch (\Exception $exc) {
-            $action->setError($this->handleException($exc));
-        }
-
-        return $action;
-    }
-
-    protected function handleException(\Exception $e)
-    {
-        Logger::write(ExceptionFormatter::format($e), Logger::WARNING, 'controller');
-
-        $err = new Error();
-        $err->setCode($e->getCode());
-        $err->setMessage($e->getMessage());
-
-        return $err;
+        
+        return [];
     }
 }

@@ -5,8 +5,10 @@
  */
 require_once dirname(__DIR__). "/bootstrap.php";
 
-use jtl\Connector\Application\Application;
+use Jtl\Connector\Core\Application\Application;
+use Jtl\Connector\Example\Authentication\TokenValidator;
 use Jtl\Connector\Example\Connector;
+use Jtl\Connector\Example\Mapper\PrimaryKeyMapper;
 
 $application = null;
 
@@ -18,9 +20,8 @@ try {
     }
 
     // Connector instance
-    $connector = Connector::getInstance();
-    $application = Application::getInstance();
-    $application->register($connector);
+    $connector = new Connector(new PrimaryKeyMapper(), new TokenValidator());
+    $application = new Application($connector);
     $application->run();
 } catch (\Exception $e) {
     if (is_object($application)) {

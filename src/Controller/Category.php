@@ -6,7 +6,7 @@
 
 namespace Jtl\Connector\Example\Controller;
 
+
 class Category extends DataController
 {
-
 }
